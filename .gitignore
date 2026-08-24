@@ -1,0 +1,15 @@
+# Large raw dataset files
+*.csv
+*.pcap
+
+# Python temporary files
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+
+# System files
+.DS_Store
+Thumbs.db
