@@ -1,0 +1,27 @@
+# Data files - ignore large originals, allow demo sample
+data/raw/*
+!data/raw/demo_sample.csv
+data/processed/
+*.pcap_ISCX.csv
+
+# Models - ignore generated models, but ALLOW the trained baseline (small, required for deployment)
+models/*
+!models/baseline/
+!models/baseline/*
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Secrets
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Large generated data files (but NOT models/baseline/)
+*.parquet
+*.joblib
+!models/baseline/*.joblib
+
+.DS_Store
