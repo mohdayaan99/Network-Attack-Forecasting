@@ -2,8 +2,7 @@
 
 ## Main Goal
 
-Forecast how many network attacks may happen in the next 5-minute time interval.
-
+Predict attack likelihood (probability) and risk level (Low / Medium / High) in the next 5-minute time window.
 ## Dataset
 
 CIC-IDS2017 labelled network-flow dataset.
