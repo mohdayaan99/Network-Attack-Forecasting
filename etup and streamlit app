@@ -1,5 +1,0 @@
-[33mf10aec8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat: add attacker path prediction and mitigation engine
-[33m782ece6[m Merge pull request #2 from mohdayaan99/backend-integration
-[33ma41f075[m feat: implement fastapi prediction endpoint
-[33md1bdc4f[m docs: update readme structure
-[33m8c75e0b[m[33m ([m[1;31morigin/feature/data-pipeline-logic[m[33m, [m[1;32mfeature/data-pipeline-logic[m[33m)[m feat: complete 5-min aggregation logic in preprocessing script
