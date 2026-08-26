@@ -1,0 +1,84 @@
+{
+  "validation": {
+    "precision": 0.75,
+    "recall": 1.0,
+    "f1": 0.8571428571428571,
+    "pr_auc": 1.0,
+    "roc_auc": 1.0,
+    "fpr": 0.3333333333333333,
+    "confusion_matrix": [
+      [
+        2,
+        1
+      ],
+      [
+        0,
+        3
+      ]
+    ],
+    "tn": 2,
+    "fp": 1,
+    "fn": 0,
+    "tp": 3
+  },
+  "test": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "pr_auc": 0.5888888888888889,
+    "roc_auc": 0.5555555555555556,
+    "fpr": 0.0,
+    "confusion_matrix": [
+      [
+        3,
+        0
+      ],
+      [
+        3,
+        0
+      ]
+    ],
+    "tn": 3,
+    "fp": 0,
+    "fn": 3,
+    "tp": 0
+  },
+  "feature_cols": [
+    "total_flows",
+    "total_packets",
+    "total_bytes",
+    "unique_source_ips",
+    "unique_dest_ips",
+    "unique_source_ports",
+    "unique_dest_ports",
+    "tcp_flow_count",
+    "udp_flow_count",
+    "syn_count",
+    "ack_count",
+    "rst_count",
+    "fin_count",
+    "psh_count",
+    "urg_count",
+    "avg_flow_duration",
+    "max_flow_duration",
+    "std_flow_duration",
+    "avg_packet_size",
+    "max_packet_size",
+    "min_packet_size",
+    "std_packet_size",
+    "avg_flow_bytes_per_sec",
+    "avg_flow_packets_per_sec",
+    "avg_fwd_packets",
+    "avg_bwd_packets",
+    "avg_fwd_bytes",
+    "avg_bwd_bytes",
+    "avg_flow_iat_mean",
+    "avg_fwd_iat_mean",
+    "avg_bwd_iat_mean",
+    "avg_active_mean",
+    "avg_idle_mean",
+    "avg_subflow_fwd_pkts",
+    "avg_subflow_bwd_pkts"
+  ],
+  "n_features": 35
+}
