@@ -30,12 +30,17 @@ def clean_and_aggregate_dataset(file_path, output_csv_path=None):
     # 4. Handle Infinity and NaNs
     df = df.replace([np.inf, -np.inf], np.nan).dropna()
 
-    # 5. Resample to 5-Minute Time Windows
+    # 5. Column Verification for Resampling
+    fwd_pkts_col = 'Total Fwd Packets' if 'Total Fwd Packets' in df.columns else 'is_attack'
+    fwd_len_col = 'Total Length of Fwd Packets' if 'Total Length of Fwd Packets' in df.columns else 'is_attack'
+    duration_col = 'Flow Duration' if 'Flow Duration' in df.columns else 'is_attack'
+
+    # 6. Resample to 5-Minute Time Windows
     print("Resampling data into 5-minute time windows...")
     aggregated_df = df.resample('5min').agg(
-        total_packets=('Total Fwd Packets', 'sum') if 'Total Fwd Packets' in df.columns else ('is_attack', 'count'),
-        total_bytes=('Total Length of Fwd Packets', 'sum') if 'Total Length of Fwd Packets' in df.columns else ('is_attack', 'count'),
-        avg_flow_duration=('Flow Duration', 'mean') if 'Flow Duration' in df.columns else ('is_attack', 'count'),
+        total_packets=(fwd_pkts_col, 'sum' if fwd_pkts_col != 'is_attack' else 'count'),
+        total_bytes=(fwd_len_col, 'sum' if fwd_len_col != 'is_attack' else 'count'),
+        avg_flow_duration=(duration_col, 'mean' if duration_col != 'is_attack' else 'count'),
         attack_count=('is_attack', 'sum'),
         total_flows=('is_attack', 'count')
     ).fillna(0)
@@ -51,3 +56,6 @@ def clean_and_aggregate_dataset(file_path, output_csv_path=None):
 
 if __name__ == "__main__":
     print("Preprocessing engine ready.")
+    
+    # Is line se '#' hata de aur apni file ka naam likh de
+    clean_and_aggregate_dataset("data/Monday-WorkingHours.pcap_ISCX.csv", "data/processed_sample.csv")
