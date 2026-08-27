@@ -1,15 +1,7 @@
 # ??? NetForecast: Temporal Network-Attack Forecasting Platform
 
-> **An Offline Enterprise Prototype for Explainable Temporal Attack Forecasting, Telemetry Ingestion, and Controlled Defense Recommendations**  
+> **NetForecast is an offline prototype for temporal network-attack forecasting. The current MVP converts timestamped flow telemetry into non-overlapping five-minute network-state windows and uses a leakage-aware logistic baseline to estimate attack likelihood in the next window. The platform also includes attack-behaviour mapping, heuristic exposure estimation and an operator-approved mitigation interface. Sequence-based world models, multi-step rollout and live telemetry ingestion are planned extensions.**  
 > *Developed for Smart India Hackathon (SIH Team: SIH26153)*
-
----
-
-## ?? Executive Summary
-
-**NetForecast** is an offline prototype designed to evaluate proactive network-threat forecasting. Traditional Intrusion Detection Systems (IDS) react *after* packet anomalies trigger signatures. NetForecast converts streaming network telemetry into time-windowed network states $S_t$, models dynamic state transitions $P(S_{t+1} \mid S_t)$, and estimates future attack probabilities over subsequent time windows ($t+1$ to $t+K$).
-
-The platform integrates heavy telemetry ingestion (up to 1 GB tested locally), attack-behavior classification, traffic-based exposure estimation, and an operator-in-the-loop controlled mitigation interface.
 
 ---
 
@@ -23,7 +15,7 @@ The platform integrates heavy telemetry ingestion (up to 1 GB tested locally), a
 | **Baseline Forecasting Model** | ? Implemented | Logistic Regression with class balancing ($t \to t+1$ prediction) |
 | **Attack-Type Behavior Inference**| ? Implemented | Heuristic & label-mapped vector taxonomy (DDoS, PortScan, Web) |
 | **Data Exposure Estimation** | ?? Simulated Estimate | Traffic-based heuristic estimation of suspicious outbound bytes |
-| **Controlled Defense Console** | ?? Controlled / Sim | Operator-in-the-loop manual action triggers (Firewall, Egress Lock) |
+| **Controlled Defense Console** | ?? Controlled / Sim | Operator-approved manual action triggers (Firewall, Egress Lock) |
 | **MITRE ATT&CK Mapping** | ? Implemented | Mapping predictions to Reconnaissance, Impact & Exfiltration tactics |
 | **Sequence Models (LSTM/Transformer)**| ?? Planned / Research | Extended multi-step rollout ($t+K$) for future iterations |
 
@@ -41,7 +33,7 @@ The objective is to compute the likelihood of an attack occurring in the future 
 
 $$P(Y_{t+1} = 1 \mid S_t) = \sigma(\mathbf{w}^T \mathbf{x}_t + b)$$
 
-* **Zero Data Leakage:** Features in $S_t$ are computed strictly using packets arriving within $[t-5\text{min}, t]$. Target labels $Y_{t+1}$ are derived exclusively from traffic in $[t, t+5\text{min}]$.
+* **Zero Data Leakage:** Features in $S_t$ are computed strictly using traffic arriving within $[t-5\text{min}, t]$. Target labels $Y_{t+1}$ are derived exclusively from traffic in $[t, t+5\text{min}]$.
 
 ---
 
@@ -49,8 +41,8 @@ $$P(Y_{t+1} = 1 \mid S_t) = \sigma(\mathbf{w}^T \mathbf{x}_t + b)$$
 
 - **Large Telemetry Ingestion:** Designed with chunked buffer streams to process heavy CSV files (up to 1 GB on target hardware) without browser memory crashes.
 - **Attack-Type & Behavior Classification:** Classifies risk probability alongside mapped behaviors (e.g., *PortScan / Reconnaissance*, *DDoS / Volumetric Impact*).
-- **Potential Exposure Estimate:** Provides a traffic-based estimate of observed outbound volume vs. potential 5-minute exposure window to assist SOC analysts in triaging data risk.
-- **Human-in-the-Loop Controlled Defense Console:** Recommends targeted firewall rate-limiting, egress port locks, and session isolation. All actions require operator approval before execution.
+- **Potential Exposure Estimate:** Provides a traffic-based heuristic estimate of observed outbound volume vs. potential 5-minute exposure window to assist SOC analysts in triaging data risk.
+- **Operator-Approved Mitigation Console:** Recommends targeted firewall rate-limiting, egress port locks, and session isolation. All actions require operator approval before execution.
 
 ---
 
