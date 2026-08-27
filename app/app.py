@@ -30,7 +30,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS to fix font truncation and increase metrics visibility
+# Custom CSS to fix font truncation, Drag-and-Drop container, and increase metrics visibility
 st.markdown("""
     <style>
     [data-testid="stMetricValue"] {
@@ -54,6 +54,11 @@ st.markdown("""
         background-color: #0f381e;
         color: #85e0a3;
         border: 1px solid #2eb85c;
+    }
+    [data-testid="stFileUploader"] {
+        border: 2px dashed #4CAF50 !important;
+        border-radius: 10px !important;
+        padding: 10px !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -80,17 +85,18 @@ def find_csv_files():
 
 
 def detect_attack_type(row, filename):
-    """Infer specific attack vector based on dataset labels or heuristics."""
-    label = str(row.get('future_label', '')).upper()
+    """Infer specific attack vector based on dataset labels or file name heuristics."""
+    label = str(row.get('future_label', '')).lower()
     fname = str(filename).lower()
     
-    if 'portscan' in label.lower() or 'portscan' in fname:
-        return "PortScan (Reconnaissance & Probe)"
-    elif 'ddos' in label.lower() or 'dos' in label.lower() or 'ddos' in fname:
+    # Precise filename and label keyword matching
+    if 'ddos' in fname or 'ddos' in label or 'dos' in label:
         return "DDoS / Distributed Denial of Service"
-    elif 'web' in label.lower() or 'web' in fname:
+    elif 'portscan' in fname or 'portscan' in label:
+        return "PortScan (Reconnaissance & Probe)"
+    elif 'web' in fname or 'web' in label or 'sql' in label or 'xss' in label:
         return "Web Attack (SQL Injection / Cross-Site Scripting)"
-    elif 'infil' in label.lower() or 'infilteration' in fname:
+    elif 'infil' in fname or 'infilteration' in fname or 'infil' in label:
         return "Infiltration & Lateral Movement"
     elif row.get('predicted_attack', 0) == 1:
         return "Suspicious Anomaly & Port Probe Detected"
@@ -130,22 +136,25 @@ def main():
         st.header("📁 Input Data")
         
         uploaded_file = st.file_uploader(
-            "Upload CIC-IDS2017 CSV", 
+            "📥 Drag & Drop CIC-IDS2017 CSV File Here", 
             type=["csv"],
-            help="Any GeneratedLabelledFlows CSV file"
+            help="Supports up to 1000MB heavy flow files via Drag & Drop or Browse"
         )
         
         local_files = find_csv_files()
         local_options = ["None"] + [f.name for f in local_files]
         selected_local = st.selectbox("Or select local file:", local_options)
         
-        use_demo = st.checkbox("Use bundled demo sample (50k rows)", value=True)
+        use_demo = st.checkbox("Use bundled demo sample (50k rows)", value=True if uploaded_file is None and selected_local == "None" else False)
         
-        if st.button("🔍 ANALYZE", type="primary", use_container_width=True):
+        if st.button("🔍 ANALYZE", type="primary", width="stretch"):
             st.session_state.run_analysis = True
+
+    if uploaded_file is not None or selected_local != "None":
+        st.session_state.run_analysis = True
     
     if not st.session_state.get('run_analysis', False):
-        st.info("👈 Configure settings in sidebar and click **ANALYZE** to start")
+        st.info("👈 Drag & Drop a CSV in the sidebar or click **ANALYZE** to start")
         
         with st.expander("📋 Supported CSV Formats"):
             st.markdown("""
@@ -161,15 +170,21 @@ def main():
             """)
         return
     
-    # Determine input file
+    # Determine input file safely with Chunked Buffer Writing (Fixes Drag & Drop Axios Error)
     csv_path = None
     if uploaded_file is not None:
         csv_path = "data/raw/uploaded.csv"
         Path(csv_path).parent.mkdir(parents=True, exist_ok=True)
+        
+        # Chunk writing prevents memory overflow for heavy drag-and-drop uploads
         uploaded_file.seek(0)
         with open(csv_path, "wb") as f:
-            f.write(uploaded_file.read())
-        st.success(f"✅ Using uploaded file: {uploaded_file.name}")
+            while chunk := uploaded_file.read(8 * 1024 * 1024):  # 8MB Chunks
+                f.write(chunk)
+                
+        file_mb = round(uploaded_file.size / (1024 * 1024), 2)
+        st.success(f"✅ Drag & Drop Successful! Uploaded File: **{uploaded_file.name}** ({file_mb} MB)")
+        
     elif selected_local != "None":
         csv_path = f"data/raw/{selected_local}"
         st.success(f"✅ Using local file: {selected_local}")
@@ -207,7 +222,11 @@ def main():
     
     latest = results_df.iloc[-1]
     prob_pct = latest['attack_probability'] * 100
-    attack_type = detect_attack_type(latest, csv_path)
+    
+    # Explicit File Name Pass for Accurate Dynamic Classification
+    display_name = uploaded_file.name if uploaded_file is not None else csv_path
+    attack_type = detect_attack_type(latest, display_name)
+    
     curr_loss, proj_loss = calculate_data_loss(results_df, latest)
     
     # Dashboard Primary Metrics
@@ -260,7 +279,7 @@ def main():
         }
     ))
     fig_gauge.update_layout(height=280)
-    st.plotly_chart(fig_gauge, use_container_width=True)
+    st.plotly_chart(fig_gauge, width="stretch")
 
     # Automated Threat Mitigation Section
     st.divider()
@@ -274,15 +293,15 @@ def main():
         m_col1, m_col2, m_col3 = st.columns(3)
         with m_col1:
             st.info(f"**Firewall Rule Target**\n- Vector: {attack_type}\n- Action: Rate-Limit Port Access")
-            if st.button("Apply Target Firewall Rule", use_container_width=True):
+            if st.button("Apply Target Firewall Rule", width="stretch"):
                 st.success("Firewall Rule Deployed!")
         with m_col2:
             st.warning(f"**Data Exfiltration Protection**\n- Prevent Loss of ~{proj_loss} MB Data\n- Isolate Vulnerable Endpoints")
-            if st.button("Lock Data Egress Ports", use_container_width=True):
+            if st.button("Lock Data Egress Ports", width="stretch"):
                 st.warning("Egress Traffic Locked!")
         with m_col3:
             st.error("**Automated Incident Response**\n- Terminate Suspicious TCP Sessions\n- Quarantine Source IPs")
-            if st.button("Trigger Full Mitigation Engine", type="primary", use_container_width=True):
+            if st.button("Trigger Full Mitigation Engine", type="primary", width="stretch"):
                 st.success("Automated Countermeasures Executed!")
 
     # Timeline Section
@@ -318,7 +337,7 @@ def main():
     
     fig_timeline.add_hline(y=50, line_dash="dash", line_color="gray", annotation_text="Threshold (50%)")
     fig_timeline.update_layout(xaxis_title="Time Window", yaxis_title="Attack Probability (%)", height=380)
-    st.plotly_chart(fig_timeline, use_container_width=True)
+    st.plotly_chart(fig_timeline, width="stretch")
 
 
 if __name__ == "__main__":
